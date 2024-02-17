@@ -172,13 +172,13 @@ LaserscanVirtualizer::LaserscanVirtualizer() : Node("laserscan_virtualizer")
 	this->declare_parameter<std::string>("base_frame", "base_link");
 	this->declare_parameter<std::string>("cloud_topic", "/cloud_pcd");
 	this->declare_parameter<std::string>("output_laser_topic", "/scan");
-	this->declare_parameter<std::string>("virtual_laser_scan", "scansx scandx");
+	this->declare_parameter<std::string>("virtual_laser_scan", "/scan_front /scan_rear");
 	this->declare_parameter("angle_min", -3.14);
 	this->declare_parameter("angle_max", 3.14);
 	this->declare_parameter("angle_increment", 0.0058);
 	this->declare_parameter("scan_time", 0.0);
 	this->declare_parameter("range_min", 0.0);
-	this->declare_parameter("range_max", 25.0);
+	this->declare_parameter("range_max", 40.0); // Changed from 25
 
 	this->get_parameter("base_frame", base_frame);
 	this->get_parameter("cloud_topic", cloud_topic);
@@ -192,7 +192,7 @@ LaserscanVirtualizer::LaserscanVirtualizer() : Node("laserscan_virtualizer")
 	this->get_parameter("range_max", range_max);
 
 	param_callback_handle_ = this->add_on_set_parameters_callback(
-			std::bind(&LaserscanVirtualizer::reconfigureCallback, this, _1));
+			std::bind(&LaserscanVirtualizer::reconfigureCallback, this, std::placeholders::_1)); // added std::placeholders:: because of ambiguous reference
 
 	tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
 	tfListener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -200,7 +200,8 @@ LaserscanVirtualizer::LaserscanVirtualizer() : Node("laserscan_virtualizer")
 	this->virtual_laser_scan_parser();
 
 	point_cloud_subscription_ =
-			this->create_subscription<sensor_msgs::msg::PointCloud2>(cloud_topic.c_str(), rclcpp::SensorDataQoS(), std::bind(&LaserscanVirtualizer::pointCloudCallback, this, _1));
+			this->create_subscription<sensor_msgs::msg::PointCloud2>(cloud_topic.c_str(), rclcpp::SensorDataQoS(), std::bind(&LaserscanVirtualizer::pointCloudCallback, this, std::placeholders::_1));
+			 // added std::placeholders:: because of ambiguous reference
 	cloud_frame = "";
 }
 

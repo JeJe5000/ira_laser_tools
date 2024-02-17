@@ -65,14 +65,14 @@ LaserscanMerger::LaserscanMerger() : Node("laserscan_multi_merger")
 {
 	this->declare_parameter<std::string>("destination_frame", "base_link");
 	this->declare_parameter<std::string>("cloud_destination_topic", "/merged_cloud");
-	this->declare_parameter<std::string>("scan_destination_topic", "/scan_multi");
-	this->declare_parameter<std::string>("laserscan_topics", "");
+	this->declare_parameter<std::string>("scan_destination_topic", "/scan");
+	this->declare_parameter<std::string>("laserscan_topics", "/scan_front /scan_rear");
 	this->declare_parameter("angle_min", -3.14);
 	this->declare_parameter("angle_max", 3.14);
 	this->declare_parameter("angle_increment", 0.0058);
 	this->declare_parameter("scan_time", 0.0);
 	this->declare_parameter("range_min", 0.0);
-	this->declare_parameter("range_max", 25.0);
+	this->declare_parameter("range_max", 40.0); // Changed from 25
 
 	this->get_parameter("destination_frame", destination_frame);
 	this->get_parameter("cloud_destination_topic", cloud_destination_topic);
@@ -86,7 +86,8 @@ LaserscanMerger::LaserscanMerger() : Node("laserscan_multi_merger")
 	this->get_parameter("range_max", range_max);
 
 	param_callback_handle_ = this->add_on_set_parameters_callback(
-			std::bind(&LaserscanMerger::reconfigureCallback, this, _1));
+			std::bind(&LaserscanMerger::reconfigureCallback, this, std::placeholders::_1)); // added std::placeholders:: because of ambiguous reference
+
 
 	tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
 	tfListener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
